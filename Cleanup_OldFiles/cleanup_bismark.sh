@@ -14,7 +14,7 @@
 #   *_trimming_report.txt | *_fastqc.html/zip | *_screen.html/txt
 #   *.M-bias.txt | *.nucleotide_stats.txt | *.insert.txt | *.histogram.pdf
 #   *_PE_report.html/txt | *.deduplication_report.txt | *_splitting_report.txt
-#   CpG_context_*.txt.gz
+#   CpG_context_*.txt.gz | *.deduplicated.bam | *.deduplicated.bedGraph.gz
 #
 # FILES MOVED to deSmith/08_cytosine_reports/:
 #   *.bismark.cov.gz | *.CpG_report.merged_CpG_evidence.cov.gz
@@ -27,8 +27,11 @@ DRYRUN=false
 DO_DELETE=false
 DO_MOVE=false
 DEST_DIR="08_cytosine_reports"       # shared folder at the deSmith level
-LOG_CSV="cleanup_bismark_log.csv"
 BASE_DIR="$(pwd)"
+DIR_NAME="$(basename "$BASE_DIR")"
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+LOG_DIR="$BASE_DIR/clean_up_wgbs_intermediates"
+LOG_CSV="${LOG_DIR}/cleanup_bismark_log_${DIR_NAME}_${TIMESTAMP}.csv"
 
 # ---------- parse args -------------------------------------------------------
 for arg in "$@"; do
@@ -61,6 +64,8 @@ INTERMEDIATE_PATTERNS=(
   "*_PE_report.txt"
   "*.deduplication_report.txt"
   "*_splitting_report.txt"
+  "*.deduplicated.bam"
+  "*.deduplicated.bedGraph.gz"
 )
 
 # ---------- files to MOVE into shared 08_cytosine_reports/ -------------------
@@ -72,6 +77,7 @@ MOVE_PATTERNS=(
 )
 
 # ---------- init CSV ---------------------------------------------------------
+mkdir -p "$LOG_DIR"
 echo "action,sample,filename,source_path,status" > "$LOG_CSV"
 
 log_csv() {
@@ -96,7 +102,8 @@ echo "  Dry run  : $DRYRUN"
 echo "  Delete   : $DO_DELETE"
 echo "  Move     : $DO_MOVE"
 echo "  Move dst : $BASE_DIR/$DEST_DIR/"
-echo "  Log CSV  : $LOG_CSV"
+echo "  Log dir  : $LOG_DIR/"
+echo "  Log CSV  : $(basename \"$LOG_CSV\")"
 echo "============================================================"
 echo ""
 
@@ -166,6 +173,28 @@ while IFS= read -r -d '' sample_dir; do
     done < <(find_by_patterns "$sample_dir" "${MOVE_PATTERNS[@]}")
 
     [[ $move_found -eq 0 ]] && echo "  (no cytosine report files found)"
+
+    # ---- Check if sample folder is now empty and remove it ------------------
+    if $DRYRUN; then
+      remaining=$(find "$sample_dir" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l)
+      remaining=$(( remaining - move_found ))
+      if [[ $remaining -le 0 ]]; then
+        echo "  [DRY-RUN RMDIR]  $sample/  (would be empty after move)"
+        log_csv "RMDIR" "$sample" "" "$sample_dir" "dry-run → would delete"
+      else
+        echo "  [KEEP DIR]       $sample/  ($remaining file(s) remaining after move)"
+      fi
+    elif $DO_MOVE; then
+      remaining=$(find "$sample_dir" -mindepth 1 -maxdepth 1 2>/dev/null | wc -l)
+      if [[ $remaining -eq 0 ]]; then
+        rmdir "$sample_dir"
+        echo "  [RMDIR]          $sample/  (empty — deleted)"
+        log_csv "RMDIR" "$sample" "" "$sample_dir" "deleted"
+      else
+        echo "  [KEEP DIR]       $sample/  ($remaining file(s) remaining)"
+        log_csv "RMDIR" "$sample" "" "$sample_dir" "kept — not empty ($remaining files)"
+      fi
+    fi
   fi
 
   echo ""
@@ -184,7 +213,7 @@ fi
 if $DRYRUN || $DO_MOVE; then
   echo "  Cytosine files flagged/moved  : $total_move  →  $DEST_DIR/"
 fi
-echo "  Log written to                : $LOG_CSV"
+echo "  Log written to                : $LOG_DIR/$(basename \"$LOG_CSV\")"
 echo "============================================================"
 echo ""
 
