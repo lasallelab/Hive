@@ -1,4 +1,4 @@
-# cleanup_bismark.sh
+# cleanup_wgbs_bismark.sh
 
 Post-alignment cleanup script for WGBS (Whole Genome Bisulfite Sequencing) data processed with  [CpG_Me](https://github.com/ben-laufer/CpG_Me). The script removes intermediate QC and alignment files to free up storage, consolidates final cytosine report outputs into a single shared folder, and removes empty sample directories left behind after the move.
 
@@ -10,8 +10,8 @@ All actions are logged to a timestamped CSV file stored under `clean_up_wgbs_int
 
 | Location | Path |
 |----------|------|
-| HPC (local) | `/quobyte/lasallegrp/projects/hpc_management/Cleanup_OldFiles/cleanup_bismark.sh` |
-| GitHub | https://github.com/lasallelab/hpc_management/blob/main/Cleanup_OldFiles/cleanup_bismark.sh |
+| HPC (local) | `/quobyte/lasallegrp/projects/hpc_management/Cleanup_OldFiles/cleanup_wgbs_bismark.sh` |
+| GitHub | https://github.com/lasallelab/hpc_management/blob/main/Cleanup_OldFiles/cleanup_wgbs_bismark.sh |
 
 ---
 
