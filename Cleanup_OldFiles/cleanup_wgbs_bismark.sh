@@ -51,6 +51,7 @@ fi
 # ---------- intermediate file patterns ---------------------------------------
 INTERMEDIATE_PATTERNS=(
   "*_trimming_report.txt"
+  "*trimmed*"
   "*_fastqc.html"
   "*_fastqc.zip"
   "*_screen.html"
@@ -60,12 +61,14 @@ INTERMEDIATE_PATTERNS=(
   "*.insert.txt"
   "*.histogram.pdf"
   "CpG_context_*.txt.gz"
+  "Non_CpG_context_*.txt.gz"
   "*_PE_report.html"
   "*_PE_report.txt"
   "*.deduplication_report.txt"
   "*_splitting_report.txt"
   "*.deduplicated.bam"
   "*.deduplicated.bedGraph.gz"
+
 )
 
 # ---------- files to MOVE into shared 08_cytosine_reports/ -------------------
