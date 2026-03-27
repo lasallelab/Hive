@@ -2,7 +2,7 @@
 # =============================================================================
 # cleanup_bismark.sh
 #
-# USAGE (run from the deSmith directory):
+# USAGE (run from the deSmith directory or directory of interest):
 #   bash cleanup_bismark.sh --dryrun          # Preview only, no changes
 #   bash cleanup_bismark.sh --delete          # Delete intermediates only
 #   bash cleanup_bismark.sh --move            # Move cytosine reports only
@@ -67,7 +67,9 @@ INTERMEDIATE_PATTERNS=(
   "*.deduplication_report.txt"
   "*_splitting_report.txt"
   "*.deduplicated.bam"
+  "*.deduplicated.sorted.bam*"
   "*.deduplicated.bedGraph.gz"
+  "*_bismark_bt2_pe.bam"
 
 )
 
